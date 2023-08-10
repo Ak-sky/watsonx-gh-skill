@@ -1,32 +1,64 @@
-from flask import Flask, render_template, request, jsonify
+# from flask import Flask, render_template, request, jsonify
 import requests
+import os
 from fastapi import FastAPI
 from fastapi import Response
 import uvicorn
+import logging
+
+# logger = logging.basicConfig(level=logging.INFO,)
+# logger = logging.getLogger(__name__)
+
+#
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,  # Set the desired log level
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    filename="app.log",  # Specify the log file
+    filemode="a"  # Append mode
+)
+
+# Create a logger
+logger = logging.getLogger()
+
+# Create a console handler
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO) 
+
+formatter = logging.Formatter("%(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+
+# Add the console handler to the logger
+logger.addHandler(handler)
+
 
 app = FastAPI()
 
 
-ACCESS_TOKEN = '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'
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", None)
 
 # GITHUB_API_URL = 'https://api.github.com/users/'
-
+#TODO: Make these inputs like Repo owner etc as Env vars
 GITHUB_API_BASE = "https://api.github.com"
 REPO_OWNER = "Ak-sky"
 ORG_NAME = "terraform-ibm-modules"
 # COLLABORATOR = "Ak-sky"
 
-@app.get('/get_user')
+@app.get('/getuser')
 def get_github_user(username: str): 
     url = GITHUB_API_BASE
     try:
+        logger.info(f"Getting github user: {username}")
         response = requests.get(GITHUB_API_BASE + "/users/" + username)
         if response.status_code == 200:
+            logger.info("Successfully received user info.")
             user_data = response.json()
             return {"user_data": user_data}
         else:
+            logger.error("User does not exists")
             return {"error": "User not found"}
     except Exception as e:
+        logger.error(e)
         return {"error": str(e)}
     
 
@@ -62,6 +94,7 @@ def get_collaborator_commits(username: str):
     'Authorization': f'Token {ACCESS_TOKEN}'
     }
     total_commits_weekly = 0
+    logger.info( "Getting collab commits..")
 
     response = requests.get(url, headers=headers)
     repos = response.json()
@@ -89,6 +122,7 @@ def get_total_pr_count(username: str):
     headers = {
     'Authorization': f'Token {ACCESS_TOKEN}'
         }
+    logger.info( "GETTING TOTAL PR COUNT..")
     
     query = f"author:{username} is:pr"
 
@@ -96,12 +130,15 @@ def get_total_pr_count(username: str):
     
     response = requests.get(search_url, headers=headers)
     if response.status_code == 200:
+        logger.info( "PR COUNT : Success")
         data = response.json()
         total_count = data.get("total_count", 0)
     
     if total_count is not None:
+        logger.info( "Invalid PR Count")
         return {"total_PR_count": total_count}
     else:
+        logger.error( "User not found")
         return {"error": "User not found"}
 
 
@@ -109,4 +146,5 @@ def get_total_pr_count(username: str):
 
 if __name__ == '__main__':
     # app.run(debug=True)
+    logger.info( "STARTING SERVER")
     uvicorn.run(app, host='0.0.0.0', port=8000)
