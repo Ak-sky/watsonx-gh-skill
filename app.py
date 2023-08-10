@@ -1,4 +1,3 @@
-# from flask import Flask, render_template, request, jsonify
 import requests
 import os
 from fastapi import FastAPI
@@ -6,16 +5,13 @@ from fastapi import Response
 import uvicorn
 import logging
 
-# logger = logging.basicConfig(level=logging.INFO,)
-# logger = logging.getLogger(__name__)
-
 #
 # Configure logging
 logging.basicConfig(
-    level=logging.DEBUG,  # Set the desired log level
+    level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    filename="app.log",  # Specify the log file
-    filemode="a"  # Append mode
+    filename="app.log",
+    filemode="a" 
 )
 
 # Create a logger
@@ -36,6 +32,8 @@ app = FastAPI()
 
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", None)
+# REPO_OWNER = os.getenv("REPO_OWNER", None)
+# ORG_NAME = os.getenv("ORG_NAME", None)
 
 # GITHUB_API_URL = 'https://api.github.com/users/'
 #TODO: Make these inputs like Repo owner etc as Env vars
@@ -44,7 +42,12 @@ REPO_OWNER = "Ak-sky"
 ORG_NAME = "terraform-ibm-modules"
 # COLLABORATOR = "Ak-sky"
 
-@app.get('/getuser')
+@app.get('/health')
+def health_check():
+    logger.info("API Health: Healthy")
+    return {"health": "ok"}
+
+@app.get('/get_user')
 def get_github_user(username: str): 
     url = GITHUB_API_BASE
     try:
@@ -82,8 +85,10 @@ def total_commits(username: str):
                 total_commits += len(commits)
     
     if total_commits is not None:
+        logger.info( "Successfully recieved total commits.")
         return {"username": username, "total_commits": total_commits}
     else:
+        logger.error( "User does not exists.")
         return {"error": "User not found"}
     
 
@@ -105,7 +110,7 @@ def get_collaborator_commits(username: str):
         
         response = requests.get(commits_url, headers=headers)
         repo_stats = response.json()
-        print(repo_stats)
+        logger.info(f"Repo stats : {repo_stats}")
         for contributor in repo_stats:
             if contributor['author']['login'] == username:
                 print(contributor['author']['login'])
@@ -113,8 +118,10 @@ def get_collaborator_commits(username: str):
                 break
 
     if total_commits_weekly is not None:
+        logger.info("Success: Collaborator commits")
         return {"contributor": contributor['author']['login'], "total_commits_weekly": total_commits_weekly}
     else:
+        logger.error( "User does not exists")
         return {"error": "User not found"}
 
 @app.get('/get_total_pr_count')
