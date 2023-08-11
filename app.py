@@ -8,7 +8,6 @@ import uvicorn
 import logging
 from datetime import datetime, timedelta
 
-#
 # Configure logging
 logging.basicConfig(
     level=logging.DEBUG,
@@ -30,19 +29,10 @@ handler.setFormatter(formatter)
 # Add the console handler to the logger
 logger.addHandler(handler)
 
-
 app = FastAPI()
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", None)
-# REPO_OWNER = os.getenv("REPO_OWNER", None)
-# ORG_NAME = os.getenv("ORG_NAME", None)
-# GITHUB_API_URL = 'https://api.github.com/users/'
-
-#TODO: Make these inputs like Repo owner etc as Env vars
 GITHUB_API_BASE = "https://api.github.com"
-REPO_OWNER = "Ak-sky"
-ORG_NAME = "terraform-ibm-modules"
-# COLLABORATOR = "Ak-sky"
 
 @app.get('/health')
 def health_check():
@@ -51,7 +41,6 @@ def health_check():
 
 @app.get('/get_user')
 def get_github_user(username: str): 
-    url = GITHUB_API_BASE
     try:
         logger.info(f"Getting github user: {username}")
         response = requests.get(GITHUB_API_BASE + "/users/" + username)
@@ -116,30 +105,27 @@ def get_total_pr_count(username: str):
     
 
 @app.get('/get_user_issues')
-def get_user_issues(username: str):
-    print("get in")
+def get_total_issue_count(username: str, repository: str, state: str):
+    headers = {
+        'Authorization': f'Token {ACCESS_TOKEN}'
+    }
 
-    # base_url = f'https://api.github.com/users/{username}/issues'
-    response = requests.get(f'https://api.github.com/users/{username}/issues?filter=subscribed')
-    print(response)
-    
-    # if response.status_code == 200:
-    #     issues = response.json()
-    #     print(issues)
-    #     return {"Total issues raised": issues}
-    # else:
-    #     return {"Total issues raised": issues}
-    
-    # try:
-    #     response = requests.get(f"{GITHUB_API_BASE}/repos/{username}/{REPO_NAME}/issues", params={"creator": user})
-        
-    #     if response.status_code == 200:
-    #         issues = response.json()
-    #         return jsonify(issues)
-    #     else:
-    #         return jsonify({"error": "Failed to retrieve issues"}), response.status_code
-    # except Exception as e:
-    #     return jsonify({"error": str(e)}), 500
+    base_url = f"https://api.github.com/repos/{username}/{repository}/issues"
+    params = {
+        "state": state,  # Valid Values'open', 'closed', or 'all' 
+    }
+
+    response = requests.get(base_url, params=params)
+
+    if response.status_code == 200:
+        issues = response.json()
+        return {"username": username, "total_issues": len(issues)}
+    else:
+        print(f"Failed to fetch issues: {response.status_code} - {response.text}")
+        return None
+
+
+
 
 git_header = headers = {
         'Authorization': f'Bearer {ACCESS_TOKEN}'
@@ -182,10 +168,49 @@ def get_user_contribution(username: str, range_val: int):
         user_contributions  = resp_data['data']['user']['contributionsCollection']['contributionCalendar']['totalContributions']
         user_insights.append([user, user_contributions])        
 
-    # head = ["User", "Contributions"]
-    # print(tabulate(user_insights, headers=head, tablefmt="grid"))
     return {"user": user_insights[0][0], "contribution": user_insights[0][1]}
 
+
+@app.get('/get_last_comments_by_user')
+def get_last_comments_by_user(username: str):
+    all_repo_comments = []
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    # Get the list of repositories for the user
+    user_repositories_url = f"https://api.github.com/users/{username}/repos"
+    response = requests.get(user_repositories_url, headers=headers)
+    repositories = response.json()
+    
+
+    # Iterate over each repository
+    for repo in repositories:
+        repo_name = repo["name"]
+        issues_url = f"https://api.github.com/repos/{username}/{repo_name}/issues"
+        params = {"state": "open"}
+        response = requests.get(issues_url, headers=headers, params=params)
+        issues = response.json()
+
+        # Iterate over each open issue
+        for issue in issues:
+            issue_number = issue["number"]
+            comments_url = f"https://api.github.com/repos/{username}/{repo_name}/issues/{issue_number}/comments"
+            response = requests.get(comments_url, headers=headers)
+            comments = response.json()
+            all_repo_comments.append(comments)
+
+    if all_repo_comments is not None:
+        for cmnts in all_repo_comments:
+            last_comment = cmnts[-1]
+            logger.info( "Successfully recieved last comment.")
+            return {"username": username, "Repository": repo_name, "Last_Comment": last_comment["body"], "Issue":  last_comment['issue_url'],"Author": last_comment['user']['login'], "Comment": last_comment['body'], "Created_At": last_comment['created_at']} 
+    else:
+        logger.error( "User does not exists.")
+        return {"error": "User not found"}
+
+    
 
 
 
