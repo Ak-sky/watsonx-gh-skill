@@ -7,7 +7,6 @@ from fastapi import Response
 import uvicorn
 import logging
 from datetime import datetime, timedelta
-from tabulate import tabulate
 
 #
 # Configure logging
