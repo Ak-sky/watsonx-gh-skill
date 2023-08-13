@@ -1,0 +1,376 @@
+openapi: 3.0.0
+info:
+  title: Github
+  description: "This skill is designed to elevate users' productivity through seamless\
+    \ integration with GitHub.\n\nBy harnessing the power of this popular platform,\
+    \ users can streamline \ntheir development workflows, collaborate effectively\
+    \ with teams, and manage \ntheir codebase efficiently. \n\nWhether it's tracking\
+    \ issues, managing repositories, automating tasks \nthrough workflows, or staying\
+    \ updated with project changes, \nthis skill empowers users to achieve more in\
+    \ less time, making their \nGitHub experience a cornerstone of enhanced productivity.\n\
+    contact:\n email: apiteam@swagger.io\n"
+  version: 1.0.0
+  x-ibm-annotations: "true"
+  x-ibm-application-name: Github
+  x-ibm-application-id: github-sdk-example
+  x-ibm-skill-type: imported
+  x-ibm-application-icon: <svg width="98" height="96" xmlns="http://www.w3.org/2000/svg"><path
+    fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0
+    21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59
+    2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015
+    4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178
+    1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778
+    5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97
+    46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052
+    13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2
+    0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08
+    11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707
+    22 75.788 0 48.854 0z" fill="#24292f"/></svg>
+servers:
+- url: https://application-12.15xu67redsj3.us-south.codeengine.appdomain.cloud
+security:
+- api_key: []
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Check the health of service
+      operationId: health_check_health_get
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        "400":
+          description: Internal server Error
+  /get_user:
+    get:
+      summary: Get Github User
+      description: Get the user specific metrics
+      operationId: get_github_user_get_user_get
+      parameters:
+      - name: username
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          title: Username
+          type: string
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserData'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /get_total_commits:
+    get:
+      summary: Total Commits
+      description: Check the total commits count for the user.
+      operationId: total_commits_get_total_commits_get
+      parameters:
+      - name: username
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          title: Username
+          type: string
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommitData'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /get_total_pr_count:
+    get:
+      summary: Get Total Pr Count
+      description: Check the total PR count raised by the user.
+      operationId: get_total_pr_count_get_total_pr_count_get
+      parameters:
+      - name: username
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          title: Username
+          type: string
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PRCountData'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /get_user_issues:
+    get:
+      summary: Get Total Issue Count
+      description: Check the total issues raised by the user.
+      operationId: get_total_issue_count_get_user_issues_get
+      parameters:
+      - name: username
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          title: Username
+          type: string
+      - name: repository
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          title: Repository
+          type: string
+      - name: state
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          title: State
+          type: string
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserIssueCountData'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /get_user_contribution:
+    get:
+      summary: Get User Contribution
+      description: Check the total contribution made by the user.
+      operationId: get_user_contribution_get_user_contribution_get
+      parameters:
+      - name: username
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          title: Username
+          type: string
+      - name: range_val
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          title: Range Val
+          type: integer
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserContriData'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /get_last_comments_by_user:
+    get:
+      summary: Get Last Comments By User
+      description: Check the last comment made by the user.
+      operationId: get_last_comments_by_user_get_last_comments_by_user_get
+      parameters:
+      - name: username
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          title: Username
+          type: string
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentData'
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    UserContriData:
+      type: object
+      properties:
+        user:
+          type: string
+        contribution:
+          type: integer
+    UserIssueCountData:
+      type: object
+      properties:
+        username:
+          type: string
+        total_issues:
+          type: integer
+    PRCountData:
+      type: object
+      properties:
+        username:
+          type: string
+        total_pr_count:
+          type: integer
+    CommentData:
+      type: object
+      properties:
+        username:
+          type: string
+        Repository:
+          type: string
+        Last_Comment:
+          type: string
+        Issue:
+          type: string
+        Author:
+          type: string
+        Comment:
+          type: string
+        Created_At:
+          type: string
+    CommitData:
+      type: object
+      properties:
+        username:
+          type: string
+        total_commits:
+          type: integer
+    UserData:
+      type: object
+      properties:
+        user_data:
+          $ref: '#/components/schemas/User'
+    User:
+      type: object
+      properties:
+        login:
+          type: string
+        id:
+          type: integer
+        url:
+          type: string
+          format: uri
+        type:
+          type: string
+        email:
+          type: string
+          nullable: true
+        public_repos:
+          type: integer
+    Metrics:
+      type: object
+      properties:
+        name:
+          type: string
+          example: prateek
+        login:
+          type: string
+          example: imprateeksh
+        id:
+          type: number
+          example: 88964991
+        node_id:
+          type: string
+          example: MDQ6VXNlcji4OTY0OTkx
+        organizations_url:
+          type: string
+          example: https://api.github.com/users/imprateeksh/orgs
+        company:
+          type: string
+          format: nullable
+        location:
+          type: string
+          format: nullable
+        email:
+          type: string
+          format: nullable
+        bio:
+          type: string
+          format: nullable
+        public_repos:
+          type: number
+          example: 11
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+    inline_response_200:
+      type: object
+      properties:
+        health:
+          type: string
+          example: ok
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: API_KEY
+      in: header
